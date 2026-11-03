@@ -137,6 +137,16 @@ test('gateway isolates workspaces and never crosses the private/community bounda
   const base = 'http://127.0.0.1:' + gatewayPort;
   await waitForGateway(base, child, () => processOutput);
 
+  for (const [platform, filename] of [
+    ['macos-arm64', 'Open-Inference-Host-0.1.6-arm64-mac.zip'],
+    ['windows-x64', 'Open-Inference-Host-0.1.6-x64-win.zip'],
+    ['linux-x64', 'Open-Inference-Host-0.1.6-x64-linux.tar.gz']
+  ]) {
+    const download = await fetch(`${base}/download/contributor/${platform}`, { redirect: 'manual' });
+    assert.equal(download.status, 302);
+    assert.equal(download.headers.get('location'), `https://github.com/realkdc/open-inference/releases/download/v0.1.6-beta.1/${filename}`);
+  }
+
   async function createWorkspace(name) {
     const invite = await jsonRequest(base, '/admin/invites', {
       method: 'POST',

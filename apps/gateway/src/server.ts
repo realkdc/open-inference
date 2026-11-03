@@ -1,9 +1,8 @@
 import Fastify, { LogController, type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import cors from '@fastify/cors';
-import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { resolve } from 'node:path';
 import { z } from 'zod';
 import { config, type AccessMode } from './config.js';
 import { PresenceRegistry, PRESENCE_REGIONS } from './presence.js';
@@ -14,21 +13,9 @@ import { Store, type Workspace } from './store.js';
 const dashboardHtml = readFileSync(fileURLToPath(new URL('../public/index.html', import.meta.url)), 'utf8');
 const operatorHtml = readFileSync(fileURLToPath(new URL('../public/operator.html', import.meta.url)), 'utf8');
 const contributorDownloads = {
-  'macos-arm64': {
-    path: resolve(fileURLToPath(new URL('../../../release/Open-Inference-Host-0.1.6-arm64-mac.zip', import.meta.url))),
-    filename: 'Open-Inference-Host-0.1.6-arm64-mac.zip',
-    contentType: 'application/zip'
-  },
-  'windows-x64': {
-    path: resolve(fileURLToPath(new URL('../../../release/Open-Inference-Host-0.1.6-x64-win.zip', import.meta.url))),
-    filename: 'Open-Inference-Host-0.1.6-x64-win.zip',
-    contentType: 'application/zip'
-  },
-  'linux-x64': {
-    path: resolve(fileURLToPath(new URL('../../../release/Open-Inference-Host-0.1.6-x64-linux.tar.gz', import.meta.url))),
-    filename: 'Open-Inference-Host-0.1.6-x64-linux.tar.gz',
-    contentType: 'application/gzip'
-  }
+  'macos-arm64': 'https://github.com/realkdc/open-inference/releases/download/v0.1.6-beta.1/Open-Inference-Host-0.1.6-arm64-mac.zip',
+  'windows-x64': 'https://github.com/realkdc/open-inference/releases/download/v0.1.6-beta.1/Open-Inference-Host-0.1.6-x64-win.zip',
+  'linux-x64': 'https://github.com/realkdc/open-inference/releases/download/v0.1.6-beta.1/Open-Inference-Host-0.1.6-x64-linux.tar.gz'
 } as const;
 const store = new Store(config.DATABASE_PATH);
 const privateQueue = new FairQueue(config.PRIVATE_MAX_CONCURRENT, config.MAX_QUEUED_REQUESTS, config.QUEUE_TIMEOUT_MS);
@@ -651,12 +638,9 @@ export async function createServer() {
     return reply.type('text/html; charset=utf-8').send(html);
   });
   app.get('/favicon.ico', async (_request, reply) => reply.code(204).send());
-  for (const [platform, asset] of Object.entries(contributorDownloads)) {
+  for (const [platform, assetUrl] of Object.entries(contributorDownloads)) {
     app.get(`/download/contributor/${platform}`, async (_request, reply) => {
-      if (!existsSync(asset.path)) return jsonError(reply, 404, `The ${platform} host app package is not available on this server yet.`, 'download_unavailable');
-      reply.header('content-disposition', `attachment; filename="${asset.filename}"`);
-      reply.header('content-length', statSync(asset.path).size);
-      return reply.type(asset.contentType).send(createReadStream(asset.path));
+      return reply.redirect(assetUrl, 302);
     });
   }
   app.get('/healthz', async () => ({
