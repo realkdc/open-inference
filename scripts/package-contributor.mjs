@@ -39,7 +39,7 @@ function npm(args, extraEnv = {}) {
 
 npm(['run', 'build:contributor']);
 npm(['run', 'prepare:mesh-bundle'], { OPENINFERENCE_MESH_TARGET: target.mesh });
-npm(['run', 'package:electron-builder', '--', '--config', 'apps/contributor/electron-builder.yml', ...target.flags]);
+npm(['run', 'package:electron-builder', '--', '--config', 'apps/contributor/electron-builder.yml', ...target.flags, '--publish', 'never']);
 
 const artifactPath = resolve('release', target.artifact);
 if (!existsSync(artifactPath)) throw new Error(`The packager finished but did not create the expected download: ${artifactPath}`);
