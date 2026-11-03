@@ -16,7 +16,7 @@
     "build": "npm run build:gateway && npm run build:contributor",
     "build:gateway": "tsc -p apps/gateway/tsconfig.json",
     "build:contributor": "tsc -p apps/contributor/tsconfig.json",
-    "test": "npm run build && node --test apps/gateway/test/*.test.mjs apps/contributor/test/*.test.mjs",
+    "test": "npm run build && node --test --test-concurrency=1 apps/gateway/test/*.test.mjs apps/contributor/test/*.test.mjs",
     "start": "node apps/gateway/dist/index.js",
     "prepare:mesh-bundle": "node scripts/prepare-mesh-bundle.mjs",
     "package:electron-builder": "electron-builder",
