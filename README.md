@@ -124,7 +124,7 @@ See [.env.example](.env.example) for gateway settings. Important controls includ
 
 For an internet-facing deployment, run behind a trusted TLS reverse proxy, set `HOST=0.0.0.0`, restrict dashboard access, use strong secrets, and keep the SQLite data directory private. The current gateway is a single-process beta service; it is not a production multi-region or horizontally scaled control plane.
 
-The repository includes a Docker/Caddy deployment for an always-on Linux host with a DNS name. Set `DOMAIN` and secrets in `.env`, then run `docker compose up -d --build`. Keep community inference disabled until MeshLLM admission controls are actually configured and checked. Read [BETA_RUNBOOK.md](BETA_RUNBOOK.md) before inviting external contributors. The temporary beta site can serve the unsigned Mac, Windows, and Linux host-app bundles after they are packaged into `release/`.
+The repository includes a Docker/Caddy deployment for an always-on Linux host with a DNS name. Set `DOMAIN` and secrets in `.env`, then run `docker compose up -d --build`. Keep community inference disabled until MeshLLM admission controls are actually configured and checked. Read [BETA_RUNBOOK.md](BETA_RUNBOOK.md) before inviting external contributors. Download the current unsigned Mac, Windows, and Linux contributor apps from the [beta releases page](https://github.com/realkdc/open-inference/releases).
 
 ## Build
 

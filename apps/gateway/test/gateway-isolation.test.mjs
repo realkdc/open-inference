@@ -128,7 +128,9 @@ test('gateway isolates workspaces and never crosses the private/community bounda
       child.kill('SIGKILL');
       await once(child, 'exit');
     }
-    await new Promise(resolve => upstream.close(resolve));
+    const upstreamClosed = new Promise(resolve => upstream.close(resolve));
+    upstream.closeAllConnections();
+    await upstreamClosed;
     await rm(dataDirectory, { recursive: true, force: true });
   });
 
