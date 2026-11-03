@@ -1,0 +1,34 @@
+appId: dev.openinference.contributor
+productName: Open Inference Host
+directories:
+  app: apps/contributor
+  output: release
+files:
+  - dist/**
+  - renderer/**
+  - package.json
+extraResources:
+  - from: .data/package-meshllm-v0.78.1/mesh-bundle
+    to: meshllm
+    filter:
+      - mesh-llm
+      - mesh-llm.exe
+      - host-imports.json
+      - MESHLLM-LICENSE.txt
+      - native-runtimes/**
+electronDownload:
+  cache: .data/electron-cache
+mac:
+  artifactName: Open-Inference-Host-${version}-${arch}-mac.${ext}
+  target:
+    - zip
+  category: public.app-category.developer-tools
+win:
+  artifactName: Open-Inference-Host-${version}-${arch}-win.${ext}
+  target:
+    - zip
+linux:
+  artifactName: Open-Inference-Host-${version}-${arch}-linux.${ext}
+  target:
+    - tar.gz
+  category: Development

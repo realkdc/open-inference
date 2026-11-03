@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#080b13" />
+    <title>Open Inference</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #080b13; color: #eff3ff; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; background: radial-gradient(ellipse at 8% 0%, #14213d 0%, #080b13 43%), #080b13; }
+      main { width: min(1040px, calc(100% - 32px)); margin: 0 auto; padding: 48px 0 72px; }
+      header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 60px; }
+      .brand { display: flex; align-items: center; gap: 12px; font-weight: 650; letter-spacing: -.02em; }
+      .mark { width: 34px; height: 34px; border-radius: 11px; background: linear-gradient(145deg, #9cf4d2, #68a8ff); box-shadow: 0 0 28px #68a8ff42; }
+      .tag { color: #9aa6bd; font-size: 13px; }
+      .hero { max-width: 730px; margin-bottom: 38px; }
+      .eyebrow { color: #92f0cf; font-size: 12px; text-transform: uppercase; letter-spacing: .13em; font-weight: 700; }
+      h1 { font-size: clamp(38px, 7vw, 66px); line-height: 1.04; letter-spacing: -.055em; margin: 15px 0 16px; }
+      p { color: #aeb9cd; line-height: 1.65; }
+      .hero p { font-size: 17px; max-width: 620px; margin: 0; }
+      .hero p + p { margin-top: 12px; }
+      .grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 18px; align-items: start; }
+      .card { border: 1px solid #263047; background: linear-gradient(145deg, #111725eF, #0d111beF); border-radius: 18px; padding: 24px; box-shadow: 0 20px 65px #0003; }
+      .card h2 { font-size: 18px; margin: 0 0 6px; letter-spacing: -.02em; }
+      .muted { color: #8b97ad; font-size: 13px; margin: 0 0 20px; }
+      label { display: block; color: #d9e2f3; font-size: 13px; margin: 13px 0 7px; }
+      input, select { width: 100%; color: #eff3ff; background: #090e18; border: 1px solid #303b53; border-radius: 9px; padding: 11px 12px; font: inherit; outline: none; }
+      input:focus, select:focus { border-color: #6cc9b4; box-shadow: 0 0 0 3px #6cc9b422; }
+      button { cursor: pointer; border: 0; border-radius: 9px; padding: 11px 14px; color: #08110f; background: #92f0cf; font: inherit; font-size: 13px; font-weight: 700; }
+      button.secondary { background: #1b2638; color: #dce7fa; border: 1px solid #35435c; }
+      button.danger { color: #ffc9c9; background: #2d1820; border: 1px solid #63343e; }
+      button:disabled { opacity: .5; cursor: not-allowed; }
+      .download-link { display: inline-block; text-decoration: none; border: 0; border-radius: 9px; padding: 11px 14px; color: #08110f; background: #92f0cf; font: inherit; font-size: 13px; font-weight: 700; }
+      .download-links { display: flex; flex-wrap: wrap; gap: 8px; }
+      .download-links > * { flex: 0 0 auto; }
+      .row { display: flex; gap: 8px; align-items: center; }
+      .row > * { flex: 1; }
+      .workspace-row { justify-content: space-between; }
+      .workspace-row button { flex: 0 0 auto; }
+      .notice { border: 1px solid #274a4b; background: #0d2222; border-radius: 12px; padding: 13px 14px; color: #b4dcd5; font-size: 13px; line-height: 1.55; margin: 17px 0; }
+      .notice.warn { border-color: #5a4930; background: #211b12; color: #e8d1a7; }
+      .status { color: #9bf0d0; font-size: 12px; min-height: 18px; margin-top: 12px; }
+      .hidden { display: none !important; }
+      .keys { display: grid; gap: 9px; margin: 14px 0; }
+      .key { display: flex; gap: 12px; justify-content: space-between; align-items: center; border: 1px solid #263047; padding: 12px; border-radius: 10px; }
+      .key small { color: #8b97ad; display: block; margin-top: 4px; }
+      .secret { overflow-wrap: anywhere; background: #070b12; border: 1px solid #31405b; border-radius: 9px; padding: 12px; color: #bcf2de; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+      code { color: #bdf3df; background: #111d28; border-radius: 5px; padding: 2px 5px; }
+      pre { white-space: pre-wrap; overflow-wrap: anywhere; color: #cbd7ea; background: #080d15; border: 1px solid #202b3f; border-radius: 10px; padding: 13px; font-size: 12px; line-height: 1.55; }
+      table { width: 100%; border-collapse: collapse; font-size: 12px; }
+      th, td { text-align: left; padding: 9px 6px; border-bottom: 1px solid #202b3f; color: #bac5d9; }
+      th { color: #8794ac; font-weight: 600; }
+      .section { margin-top: 21px; }
+      .small { color: #8592a8; font-size: 12px; line-height: 1.55; }
+      .toast { position: fixed; right: 20px; bottom: 20px; max-width: 360px; border-radius: 10px; padding: 12px 15px; background: #102a25; border: 1px solid #326153; color: #cdf5e4; font-size: 13px; }
+      .network-map { margin: 0 0 24px; overflow: hidden; }
+      .network-map svg { display: block; width: 100%; max-height: 280px; margin: 12px auto 0; }
+      .map-land { fill: #1b2b3b; stroke: #2c4357; stroke-width: 1.5; }
+      .map-grid { fill: none; stroke: #294153; stroke-width: 1; opacity: .65; }
+      .map-dot { fill: #92f0cf; stroke: #d4fff1; stroke-width: 2; filter: drop-shadow(0 0 8px #92f0cfaa); }
+      .map-dot-core { fill: #fff; }
+      .map-legend { display: flex; gap: 10px; flex-wrap: wrap; }
+      .map-chip { border: 1px solid #29384d; background: #0b111c; border-radius: 999px; color: #aeb9cd; padding: 6px 10px; font-size: 11px; }
+      .host-tokens { display: grid; gap: 8px; margin-top: 12px; }
+      @media (max-width: 760px) { main { padding-top: 26px; } header { margin-bottom: 40px; } .grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="brand"><div class="mark"></div><span>Open Inference</span></div>
+        <div class="tag">Free, invite-only preview · <a href="/operator">Operator dashboard</a></div>
+      </header>
+      <section class="hero">
+        <div class="eyebrow">Open models · early beta</div>
+        <h1>Open models, shared by everyone.</h1>
+        <p>Use a private test endpoint or the shared community API. They have separate keys: private requests stay on the beta host, while community requests go to computers that opted in to contribute.</p>
+        <p id="community-status-copy" class="small" aria-live="polite">Checking the shared pool. You can prepare a community API key before a model is online.</p>
+      </section>
+
+      <section class="card" style="max-width:760px;margin-bottom:18px">
+        <h2>Want to contribute a computer?</h2>
+        <p class="muted">Installing the host app does not start sharing. It includes MeshLLM, lets you choose which model pool to help, and sets a safe memory limit for your computer. You still press <strong>Start sharing</strong> yourself.</p>
+        <p class="small">The app shows your public MeshLLM Owner ID first. Send it to the beta operator for approval; the app will not join until that ID is on the approved list.</p>
+        <p class="small">The app offers Qwen3 8B as the starter pool and a larger Qwen3 30B-A3B pool. Each needs its own group of computers; the larger pool needs substantially more shared capacity.</p>
+        <div class="download-links" aria-label="Contributor app downloads">
+          <a class="download-link" href="/download/contributor/macos-arm64">Apple Silicon Mac</a>
+          <a class="download-link" href="/download/contributor/windows-x64">Windows x64</a>
+          <a class="download-link" href="/download/contributor/linux-x64">Linux x64</a>
+        </div>
+        <p class="small">These early beta downloads are unsigned and may trigger an operating-system warning. MeshLLM is included; a GPU runtime is selected automatically, and model files download when you join.</p>
+      </section>
+
+      <div class="notice warn"><strong>Private preview limits:</strong> one model, one generation at a time, and a small daily usage allowance. Requests to the private test route pass through a temporary HTTPS tunnel whose provider terminates TLS, then run on the beta host. The tunnel provider and host operator could access prompts in transit or during processing. Please do not send sensitive prompts.</div>
+
+      <section class="card network-map" aria-labelledby="network-map-title">
+        <div class="row workspace-row"><h2 id="network-map-title">The shared network</h2><span id="map-count" class="tag">Checking network…</span></div>
+        <p class="muted">Each dot represents at least three active host tokens in a broad region. No GPS or exact addresses are shown.</p>
+        <svg id="network-globe" viewBox="0 0 900 380" role="img" aria-label="Globe showing anonymous, aggregated active compute regions">
+          <defs><radialGradient id="globe-fill" cx="46%" cy="38%"><stop offset="0" stop-color="#14283a"/><stop offset="1" stop-color="#090f18"/></radialGradient></defs>
+          <ellipse cx="450" cy="190" rx="405" ry="172" fill="url(#globe-fill)" stroke="#294153" stroke-width="2" />
+          <ellipse class="map-grid" cx="450" cy="190" rx="310" ry="172" />
+          <ellipse class="map-grid" cx="450" cy="190" rx="145" ry="172" />
+          <path class="map-grid" d="M48 190h804M80 125c200 50 540 50 740 0M80 255c200-50 540-50 740 0" />
+          <path class="map-land" d="M132 88l42-18 34 9 12 21 32 5 28 27-8 22-24 13-5 33-21 15-18-13-12-34-25-13-6-25-29-11-18-18zM212 221l30 8 22 25-7 27-18 29-6 41-18 12-13-36-17-32 7-32zM395 87l31-14 23 10 9 24 22 12-4 23-22 12-8 28-23 1-12-24-20-12 3-25-18-13zM421 194l29-9 23 22 6 35-13 42-20 36-18-11 1-40-13-21 7-26zM502 96l42-17 53 11 26 21 43-3 43 21 9 22-27 14-36-13-23 19-33 1-14 20-28-14-18 10-28-30-30-5-8-26-28-8zM595 213l38-18 28 17 12 31-18 24-31 4-24-20-17-18z" />
+          <g id="network-dots"></g>
+        </svg>
+        <div id="map-legend" class="map-legend"></div>
+        <p id="network-map-status" class="small">A region appears after at least three computers opt in and come online.</p>
+      </section>
+
+      <section id="claim-card" class="card" style="max-width:560px">
+        <h2>Join with an invite</h2>
+        <p class="muted">Your workspace and API keys are separate from other users.</p>
+        <form id="claim-form">
+          <label for="invite">Invite code</label>
+          <input id="invite" autocomplete="off" required placeholder="oi_inv_…" />
+          <label for="workspace-name">Workspace name</label>
+          <input id="workspace-name" maxlength="64" required placeholder="My workspace" />
+          <div style="margin-top:16px"><button type="submit">Create workspace</button></div>
+          <div id="claim-status" class="status"></div>
+        </form>
+        <div class="section">
+          <h2>Already have a dashboard key?</h2>
+          <form id="dashboard-login-form">
+            <label for="dashboard-login-key">Dashboard key</label>
+            <input id="dashboard-login-key" type="password" autocomplete="off" required placeholder="Paste your saved workspace key" />
+            <div style="margin-top:12px"><button type="submit" class="secondary">Sign in</button></div>
+            <div id="dashboard-login-status" class="status"></div>
+          </form>
+        </div>
+      </section>
+
+      <section id="dashboard-key-once" class="card hidden" style="max-width:560px">
+        <h2>Save your workspace dashboard key</h2>
+        <p class="muted">This key lets you reopen this workspace in another browser. It is shown only now.</p>
+        <div id="dashboard-key-secret" class="secret"></div>
+        <div class="row" style="margin-top:10px"><button id="copy-dashboard-key" class="secondary" type="button">Copy key</button><button id="dismiss-dashboard-key" class="secondary" type="button">I've saved it</button></div>
+      </section>
+
+      <section id="dashboard" class="grid hidden">
+        <div class="card">
+          <div class="row workspace-row"><h2 id="workspace-title">Workspace</h2><button id="sign-out" class="secondary" type="button">Sign out</button></div>
+          <p id="pool-status" class="muted">The shared community pool is the default. The operator must enable its mesh after verifying who can join.</p>
+          <div class="notice warn"><strong>Shared pool privacy:</strong> requests are sent to computers doing model work. Their operators may be able to inspect prompts or intermediate data. Network encryption does not hide data from a computer processing it.</div>
+          <div class="notice"><strong>Private test route:</strong> this preview sends requests only to the beta host, not volunteer machines. If that host is unavailable, the request fails closed. The public HTTPS tunnel provider and host operator could access prompts in transit or during processing, so do not send sensitive prompts.</div>
+          <p class="small">The gateway stores account/key records and usage totals. It does not save chat messages or prompt text. Community computers still process live requests.</p>
+          <form id="key-form">
+            <div class="row">
+              <div><label for="key-mode">Pool</label><select id="key-mode"><option value="private" selected>Private test host</option><option value="community">Shared community</option></select></div>
+              <div><label for="key-label">Key name</label><input id="key-label" maxlength="48" required placeholder="Hermes" /></div>
+            </div>
+            <div style="margin-top:14px"><button type="submit">Create API key</button></div>
+            <div id="key-status" class="status"></div>
+          </form>
+          <div id="new-key" class="section hidden">
+            <div class="notice warn">Copy this key now. It will not be shown again.</div>
+            <div id="new-key-secret" class="secret"></div>
+            <button id="copy-key" class="secondary" style="margin-top:9px">Copy key</button>
+          </div>
+          <div class="section">
+            <h2>API keys</h2>
+            <div id="keys" class="keys"></div>
+          </div>
+          <div class="section">
+            <h2>Connect Hermes</h2>
+            <pre id="hermes-config">Create a key to see the matching endpoint setup.</pre>
+            <p class="small">In Hermes, choose a custom OpenAI-compatible endpoint and enter the base URL, API key, and a model returned by <code>/v1/models</code>.</p>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <h2>Available models</h2>
+            <p class="muted">Availability changes as hosts come and go.</p>
+            <label for="model-mode">Pool</label>
+            <select id="model-mode"><option value="private" selected>Private test host</option><option value="community">Shared community</option></select>
+            <div id="models" class="keys"></div>
+            <div id="models-status" class="status"></div>
+          </div>
+          <div class="card section">
+            <h2>Today's usage</h2>
+            <p class="muted">Your plan has a daily limit. One unit is about one token on a model with a 1× weight; larger models can use more units per token.</p>
+            <div id="usage"></div>
+          </div>
+          <div class="card section">
+            <h2>Help build the shared pool</h2>
+          <p class="muted">The first preview checks the API on one host. The split-model pool comes online after approved contributors join and a model becomes ready.</p>
+            <p class="small">Optional network map: create a separate host token below and choose a broad region in the app. Use one token per computer. The public map shows a region only after 3 or more host tokens are active there. No GPS or IP-based location lookup is used.</p>
+            <form id="host-token-form">
+              <label for="host-label">Computer label</label>
+              <input id="host-label" maxlength="48" required placeholder="My Mac" />
+              <div style="margin-top:12px"><button type="submit" class="secondary">Create map token</button></div>
+              <div id="host-token-status" class="status"></div>
+            </form>
+            <div id="new-host-token" class="section hidden">
+              <div class="notice warn">Shown once. This token can only report a broad region and online/offline status. Keep it private; it cannot call the inference API.</div>
+              <div id="new-host-token-secret" class="secret"></div>
+              <button id="copy-host-token" class="secondary" style="margin-top:9px" type="button">Copy host token</button>
+            </div>
+            <div id="host-tokens" class="host-tokens"></div>
+            <p class="small">Higher community plans are assigned by an admin during the beta. Automatic contributor rewards are not ready until we can measure useful work completed by each computer.</p>
+            <div class="notice warn">A computer doing model work may receive prompts or intermediate model data. Use the shared pool only for requests you are comfortable sending to community computers.</div>
+            <p class="small">The contributor app uses the MeshLLM split-serving runtime. A model must have a compatible split package, and the worker network needs fast links for fast replies.</p>
+          </div>
+          <div class="card section">
+            <h2>Create beta invite</h2>
+            <p class="muted">For project admins. The admin token is used only for this request.</p>
+            <form id="admin-invite-form">
+              <label for="admin-token">Admin token</label>
+              <input id="admin-token" type="password" autocomplete="off" placeholder="Paste admin token" required />
+              <label for="invite-expiry">Invite expires in</label>
+              <select id="invite-expiry"><option value="24">24 hours</option><option value="72" selected>3 days</option><option value="168">7 days</option><option value="720">30 days</option></select>
+              <div style="margin-top:12px"><button type="submit">Create invite</button></div>
+              <div id="admin-invite-status" class="status"></div>
+            </form>
+            <div id="admin-invite-result" class="section hidden">
+              <div class="notice warn">This invite is shown once. Share it with the person joining the beta.</div>
+              <div id="admin-invite-secret" class="secret"></div>
+              <button id="copy-invite" class="secondary" style="margin-top:9px">Copy invite</button>
+            </div>
+            <div class="section">
+              <h2>Assign a usage plan</h2>
+              <p class="small">Free is the default. Assign a higher community limit only after confirming a member contributes useful compute.</p>
+              <label for="admin-plan-token">Admin token</label>
+              <input id="admin-plan-token" type="password" autocomplete="off" placeholder="Enter token to manage plans" />
+              <div class="row" style="margin-top:12px">
+                <button id="load-workspaces" class="secondary" type="button">Load workspaces</button>
+                <select id="admin-workspace-select" disabled aria-label="Workspace"></select>
+              </div>
+              <label for="admin-plan-select">Plan</label>
+              <select id="admin-plan-select" disabled></select>
+              <div style="margin-top:12px"><button id="assign-plan" type="button" disabled>Assign plan</button></div>
+              <div id="admin-plan-status" class="status" role="status"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <div id="toast" class="toast hidden" role="status"></div>
+    <script>
+      const claimForm = document.querySelector('#claim-form');
+      const claimStatus = document.querySelector('#claim-status');
+      const dashboard = document.querySelector('#dashboard');
+      const claimCard = document.querySelector('#claim-card');
+      const storageKey = 'open-inference-dashboard-token';
+      let dashboardData;
+      let createdDashboardKey;
+      let lastCreatedKey;
+      let lastInvite;
+      let lastCreatedHostToken;
+      let adminWorkspacePlans = new Map();
+
+      async function request(path, options = {}) {
+        const token = localStorage.getItem(storageKey);
+        const response = await fetch(path, {
+          ...options,
+          headers: {
+            ...(options.headers || {}),
+            ...(token ? { authorization: 'Bearer ' + token } : {}),
+            ...(options.body ? { 'content-type': 'application/json' } : {})
+          }
+        });
+        const body = response.status === 204 ? null : await response.json().catch(() => null);
+        if (!response.ok) throw new Error(body?.error?.message || 'The request failed.');
+        return body;
+      }
+
+      function showToast(message) {
+        const toast = document.querySelector('#toast');
+        toast.textContent = message;
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 2800);
+      }
+
+      document.querySelector('#sign-out').addEventListener('click', () => {
+        localStorage.removeItem(storageKey);
+        dashboard.classList.add('hidden');
+        claimCard.classList.remove('hidden');
+        showToast('Signed out of this browser.');
+      });
+
+      document.querySelector('#dashboard-login-form').addEventListener('submit', async event => {
+        event.preventDefault();
+        const status = document.querySelector('#dashboard-login-status');
+        const token = document.querySelector('#dashboard-login-key').value.trim();
+        status.textContent = 'Signing in…';
+        localStorage.setItem(storageKey, token);
+        const opened = await loadDashboard();
+        status.textContent = opened ? '' : 'That key could not open a workspace.';
+        document.querySelector('#dashboard-login-key').value = '';
+      });
+
+      document.querySelector('#copy-dashboard-key').addEventListener('click', async () => {
+        if (!createdDashboardKey) return;
+        await navigator.clipboard.writeText(createdDashboardKey);
+        showToast('Dashboard key copied. Store it somewhere private.');
+      });
+
+      document.querySelector('#dismiss-dashboard-key').addEventListener('click', () => {
+        document.querySelector('#dashboard-key-once').classList.add('hidden');
+        createdDashboardKey = undefined;
+      });
+
+      claimForm.addEventListener('submit', async event => {
+        event.preventDefault();
+        claimStatus.textContent = 'Creating workspace…';
+        try {
+          const result = await fetch('/api/invites/claim', {
+            method: 'POST', headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ inviteToken: document.querySelector('#invite').value.trim(), workspaceName: document.querySelector('#workspace-name').value.trim() })
+          }).then(async response => {
+            const body = await response.json();
+            if (!response.ok) throw new Error(body?.error?.message || 'Invite could not be claimed.');
+            return body;
+          });
+          localStorage.setItem(storageKey, result.dashboardToken);
+          createdDashboardKey = result.dashboardToken;
+          document.querySelector('#dashboard-key-secret').textContent = createdDashboardKey;
+          document.querySelector('#dashboard-key-once').classList.remove('hidden');
+          claimStatus.textContent = '';
+          await loadDashboard();
+          showToast('Workspace created. Create an API key to connect a client.');
+        } catch (error) {
+          claimStatus.textContent = error.message;
+          claimStatus.style.color = '#ffaaa8';
+        }
+      });
+
+      document.querySelector('#key-form').addEventListener('submit', async event => {
+        event.preventDefault();
+        const status = document.querySelector('#key-status');
+        status.textContent = 'Creating key…';
+        try {
+          lastCreatedKey = await request('/api/keys', {
+            method: 'POST', body: JSON.stringify({ mode: document.querySelector('#key-mode').value, label: document.querySelector('#key-label').value.trim() })
+          });
+          document.querySelector('#new-key-secret').textContent = lastCreatedKey.secret;
+          document.querySelector('#new-key').classList.remove('hidden');
+          status.textContent = '';
+          await loadDashboard();
+        } catch (error) { status.textContent = error.message; status.style.color = '#ffaaa8'; }
+      });
+
+      document.querySelector('#copy-key').addEventListener('click', async () => {
+        if (!lastCreatedKey) return;
+        await navigator.clipboard.writeText(lastCreatedKey.secret);
+        showToast('API key copied. Keep it private.');
+      });
+
+      document.querySelector('#host-token-form').addEventListener('submit', async event => {
+        event.preventDefault();
+        const status = document.querySelector('#host-token-status');
+        status.textContent = 'Creating host token…';
+        try {
+          lastCreatedHostToken = await request('/api/host-tokens', {
+            method: 'POST', body: JSON.stringify({ label: document.querySelector('#host-label').value.trim() })
+          });
+          document.querySelector('#new-host-token-secret').textContent = lastCreatedHostToken.secret;
+          document.querySelector('#new-host-token').classList.remove('hidden');
+          status.textContent = '';
+          await loadDashboard();
+        } catch (error) { status.textContent = error.message; status.style.color = '#ffaaa8'; }
+      });
+
+      document.querySelector('#copy-host-token').addEventListener('click', async () => {
+        if (!lastCreatedHostToken) return;
+        await navigator.clipboard.writeText(lastCreatedHostToken.secret);
+        showToast('Host token copied. Keep it private.');
+      });
+
+      document.querySelector('#admin-invite-form').addEventListener('submit', async event => {
+        event.preventDefault();
+        const status = document.querySelector('#admin-invite-status');
+        status.textContent = 'Creating invite…';
+        const adminToken = document.querySelector('#admin-token').value;
+        try {
+          const response = await fetch('/admin/invites', {
+            method: 'POST',
+            headers: { authorization: 'Bearer ' + adminToken, 'content-type': 'application/json' },
+            body: JSON.stringify({ expiresInHours: Number(document.querySelector('#invite-expiry').value) })
+          });
+          document.querySelector('#admin-token').value = '';
+          const body = await response.json();
+          if (!response.ok) throw new Error(body?.error?.message || 'Invite could not be created.');
+          lastInvite = body.token;
+          document.querySelector('#admin-invite-secret').textContent = body.token;
+          document.querySelector('#admin-invite-result').classList.remove('hidden');
+          status.textContent = 'Invite created. Expires ' + new Date(body.expiresAt).toLocaleString() + '.';
+        } catch (error) { status.textContent = error.message; status.style.color = '#ffaaa8'; }
+      });
+
+      document.querySelector('#copy-invite').addEventListener('click', async () => {
+        if (!lastInvite) return;
+        await navigator.clipboard.writeText(lastInvite);
+        showToast('Invite copied.');
+      });
+
+      document.querySelector('#load-workspaces').addEventListener('click', async () => {
+        const status = document.querySelector('#admin-plan-status');
+        const tokenInput = document.querySelector('#admin-plan-token');
+        const token = tokenInput.value.trim();
+        if (!token) { status.textContent = 'Enter the admin token first.'; return; }
+        status.textContent = 'Loading workspaces…';
+        try {
+          const response = await fetch('/admin/workspaces', { headers: { authorization: 'Bearer ' + token } });
+          tokenInput.value = '';
+          const body = await response.json().catch(() => null);
+          if (!response.ok) throw new Error(body?.error?.message || 'Workspaces could not be loaded.');
+          const workspaceSelect = document.querySelector('#admin-workspace-select');
+          workspaceSelect.replaceChildren();
+          adminWorkspacePlans = new Map();
+          for (const workspace of body.data) {
+            const option = document.createElement('option');
+            option.value = workspace.id;
+            option.textContent = workspace.name + ' · ' + (workspace.plan?.name || 'Free');
+            workspaceSelect.append(option);
+            adminWorkspacePlans.set(workspace.id, workspace.plan?.id || 'free');
+          }
+          workspaceSelect.disabled = body.data.length === 0;
+          const planSelect = document.querySelector('#admin-plan-select');
+          planSelect.replaceChildren(...dashboardData.plans.map(plan => {
+            const option = document.createElement('option');
+            option.value = plan.id;
+            option.textContent = plan.name + ' · ' + Number(plan.communityDailyUnits).toLocaleString() + ' community units/day';
+            return option;
+          }));
+          if (body.data.length) planSelect.value = adminWorkspacePlans.get(body.data[0].id) || 'free';
+          planSelect.disabled = body.data.length === 0;
+          document.querySelector('#assign-plan').disabled = body.data.length === 0;
+          status.textContent = body.data.length ? 'Choose a workspace and plan. Enter the admin token again to save.' : 'No workspaces yet.';
+        } catch (error) { tokenInput.value = ''; status.textContent = error.message; status.style.color = '#ffaaa8'; }
+      });
+
+      document.querySelector('#admin-workspace-select').addEventListener('change', event => {
+        document.querySelector('#admin-plan-select').value = adminWorkspacePlans.get(event.target.value) || 'free';
+      });
+
+      document.querySelector('#assign-plan').addEventListener('click', async () => {
+        const status = document.querySelector('#admin-plan-status');
+        status.style.color = '';
+        const tokenInput = document.querySelector('#admin-plan-token');
+        const token = tokenInput.value.trim();
+        if (!token) { status.textContent = 'Enter the admin token to save this plan.'; return; }
+        const workspaceId = document.querySelector('#admin-workspace-select').value;
+        const planId = document.querySelector('#admin-plan-select').value;
+        status.textContent = 'Saving plan…';
+        try {
+          const response = await fetch('/admin/workspaces/' + encodeURIComponent(workspaceId) + '/plan', {
+            method: 'POST',
+            headers: { authorization: 'Bearer ' + token, 'content-type': 'application/json' },
+            body: JSON.stringify({ planId })
+          });
+          tokenInput.value = '';
+          const body = await response.json().catch(() => null);
+          if (!response.ok) throw new Error(body?.error?.message || 'Plan could not be assigned.');
+          const workspaceSelect = document.querySelector('#admin-workspace-select');
+          const option = workspaceSelect.selectedOptions[0];
+          const plan = dashboardData.plans.find(item => item.id === body.plan.id);
+          if (option && plan) option.textContent = option.textContent.split(' · ')[0] + ' · ' + plan.name;
+          adminWorkspacePlans.set(workspaceId, body.plan.id);
+          document.querySelector('#admin-plan-select').value = body.plan.id;
+          status.textContent = 'Plan assigned: ' + body.plan.name + '.';
+          if (workspaceId === dashboardData.workspace.id) await loadDashboard();
+        } catch (error) { tokenInput.value = ''; status.textContent = error.message; status.style.color = '#ffaaa8'; }
+      });
+
+      document.querySelector('#model-mode').addEventListener('change', loadModels);
+      document.querySelector('#model-mode').addEventListener('change', renderHermesSetup);
+
+      async function loadDashboard() {
+        try {
+          dashboardData = await request('/api/dashboard');
+          claimCard.classList.add('hidden');
+          dashboard.classList.remove('hidden');
+          document.querySelector('#workspace-title').textContent = dashboardData.workspace.name;
+          document.querySelector('#pool-status').textContent = dashboardData.pools.communityEnabled
+            ? 'Community API ready. Create a Shared community key and use its URL in Hermes or another OpenAI-compatible app. Community computers process those prompts.'
+            : dashboardData.pools.privateConfigured
+              ? `${dashboardData.pools.communityStatusMessage} You can create a community key now; its API will return unavailable until a model is ready. The private test host is separate and never receives community requests.`
+              : `${dashboardData.pools.communityStatusMessage} You can create a community key now; its API will return unavailable until a model is ready.`;
+          renderKeys();
+          renderHostTokens();
+          renderUsage();
+          await loadModels();
+          renderHermesSetup();
+          void loadCommunityStatus();
+          return true;
+        } catch (error) {
+          localStorage.removeItem(storageKey);
+          dashboard.classList.add('hidden');
+          claimCard.classList.remove('hidden');
+          if (error.message !== 'A valid workspace dashboard key is required.') showToast(error.message);
+          return false;
+        }
+      }
+
+      function renderKeys() {
+        const root = document.querySelector('#keys');
+        root.replaceChildren();
+        if (!dashboardData.apiKeys.length) { root.textContent = 'No API keys yet.'; root.className = 'keys small'; return; }
+        root.className = 'keys';
+        for (const key of dashboardData.apiKeys) {
+          const row = document.createElement('div'); row.className = 'key';
+          const info = document.createElement('div');
+          info.innerHTML = '<strong></strong><small></small>';
+          info.querySelector('strong').textContent = key.label + ' · ' + key.mode;
+          info.querySelector('small').textContent = key.prefix + '… · created ' + new Date(key.createdAt).toLocaleDateString();
+          const revoke = document.createElement('button'); revoke.className = 'danger'; revoke.textContent = 'Revoke';
+          revoke.addEventListener('click', async () => {
+            if (!confirm('Revoke this API key? Apps using it will stop working.')) return;
+            try { await request('/api/keys/' + encodeURIComponent(key.id), { method: 'DELETE' }); await loadDashboard(); showToast('Key revoked.'); }
+            catch (error) { showToast(error.message); }
+          });
+          row.append(info, revoke); root.append(row);
+        }
+      }
+
+      function renderHostTokens() {
+        const root = document.querySelector('#host-tokens');
+        root.replaceChildren();
+        if (!dashboardData.hostTokens.length) {
+          root.textContent = 'No host tokens yet.';
+          root.className = 'host-tokens small';
+          return;
+        }
+        root.className = 'host-tokens';
+        for (const token of dashboardData.hostTokens) {
+          const row = document.createElement('div'); row.className = 'key';
+          const info = document.createElement('div'); info.innerHTML = '<strong></strong><small></small>';
+          info.querySelector('strong').textContent = token.label;
+          info.querySelector('small').textContent = token.prefix + '… · created ' + new Date(token.createdAt).toLocaleDateString();
+          const revoke = document.createElement('button'); revoke.className = 'danger'; revoke.textContent = 'Revoke';
+          revoke.addEventListener('click', async () => {
+            if (!confirm('Revoke this host token? Its map presence will disappear.')) return;
+            try { await request('/api/host-tokens/' + encodeURIComponent(token.id), { method: 'DELETE' }); await loadDashboard(); showToast('Host token revoked.'); }
+            catch (error) { showToast(error.message); }
+          });
+          row.append(info, revoke); root.append(row);
+        }
+      }
+
+      async function loadModels() {
+        const mode = document.querySelector('#model-mode').value;
+        const root = document.querySelector('#models');
+        const status = document.querySelector('#models-status');
+        root.replaceChildren(); status.textContent = 'Checking availability…';
+        try {
+          const result = await request('/api/dashboard/models?mode=' + mode);
+          if (!result.data.length) { status.textContent = 'No models are online in this pool right now.'; return; }
+          status.textContent = '';
+          for (const model of result.data) {
+            const row = document.createElement('div'); row.className = 'key';
+            const info = document.createElement('div'); info.innerHTML = '<strong></strong><small></small>';
+            info.querySelector('strong').textContent = model.id;
+            info.querySelector('small').textContent = mode === 'community' ? 'Volunteer hosted' : 'Service controlled';
+            const copy = document.createElement('button'); copy.className = 'secondary'; copy.textContent = 'Copy';
+            copy.addEventListener('click', async () => { await navigator.clipboard.writeText(model.id); showToast('Model name copied.'); });
+            row.append(info, copy); root.append(row);
+          }
+        } catch (error) { status.textContent = error.message; }
+      }
+
+      function renderUsage() {
+        const root = document.querySelector('#usage');
+        const used = { private: 0, community: 0 };
+        for (const row of dashboardData.usage) used[row.mode] += row.usedUnits + row.reservedUnits;
+        const summary = document.createElement('div');
+        summary.className = 'notice';
+        summary.textContent = `${dashboardData.plan.name} plan · Private: ${used.private.toLocaleString()} / ${dashboardData.limits.private.toLocaleString()} units today · Community: ${used.community.toLocaleString()} / ${dashboardData.limits.community.toLocaleString()} units today`;
+        const plans = document.createElement('p');
+        plans.className = 'small';
+        plans.textContent = dashboardData.plans.map(plan => `${plan.name}: ${Number(plan.communityDailyUnits).toLocaleString()} community units/day`).join(' · ');
+        if (!dashboardData.usage.length) { root.replaceChildren(summary, plans, Object.assign(document.createElement('p'), { className: 'small', textContent: 'No requests yet today.' })); return; }
+        const table = document.createElement('table');
+        table.innerHTML = '<thead><tr><th>Pool</th><th>Model</th><th>Used</th><th>Reserved</th></tr></thead><tbody></tbody>';
+        const tbody = table.querySelector('tbody');
+        for (const row of dashboardData.usage) {
+          const tr = document.createElement('tr');
+          for (const value of [row.mode, row.model, row.usedUnits.toLocaleString(), row.reservedUnits.toLocaleString()]) {
+            const td = document.createElement('td'); td.textContent = value; tr.append(td);
+          }
+          tbody.append(tr);
+        }
+        root.replaceChildren(summary, plans, table);
+      }
+
+      const regionLocations = {
+        'na-west': { label: 'North America · West', x: 191, y: 130 },
+        'na-central': { label: 'North America · Central', x: 251, y: 139 },
+        'na-east': { label: 'North America · East', x: 300, y: 136 },
+        'south-america': { label: 'South America', x: 315, y: 265 },
+        'europe-west': { label: 'Europe · West', x: 462, y: 123 },
+        'europe-central': { label: 'Europe · Central', x: 500, y: 127 },
+        'europe-east': { label: 'Europe · East', x: 538, y: 131 },
+        'africa': { label: 'Africa', x: 494, y: 226 },
+        'middle-east': { label: 'Middle East', x: 564, y: 179 },
+        'south-asia': { label: 'South Asia', x: 620, y: 187 },
+        'east-asia': { label: 'East Asia', x: 698, y: 145 },
+        'southeast-asia': { label: 'Southeast Asia', x: 672, y: 211 },
+        'oceania': { label: 'Oceania', x: 748, y: 277 }
+      };
+
+      async function loadNetworkMap() {
+        const dots = document.querySelector('#network-dots');
+        const legend = document.querySelector('#map-legend');
+        const status = document.querySelector('#network-map-status');
+        try {
+          const response = await fetch('/api/network/map', { cache: 'no-store' });
+          const body = await response.json();
+          if (!response.ok) throw new Error(body?.error?.message || 'Network map is unavailable.');
+          dots.replaceChildren();
+          legend.replaceChildren();
+          for (const cluster of body.clusters) {
+            const location = regionLocations[cluster.region];
+            if (!location) continue;
+            const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+            title.textContent = `${location.label}: ${cluster.countBand} active host tokens`;
+            const halo = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            halo.setAttribute('cx', String(location.x)); halo.setAttribute('cy', String(location.y)); halo.setAttribute('r', '12'); halo.setAttribute('class', 'map-dot'); halo.setAttribute('opacity', '.38');
+            const core = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            core.setAttribute('cx', String(location.x)); core.setAttribute('cy', String(location.y)); core.setAttribute('r', '4'); core.setAttribute('class', 'map-dot-core');
+            group.append(title, halo, core); dots.append(group);
+            const chip = document.createElement('span'); chip.className = 'map-chip'; chip.textContent = location.label + ' · ' + cluster.countBand;
+            legend.append(chip);
+          }
+          document.querySelector('#map-count').textContent = body.clusters.length
+            ? body.clusters.length + ' visible regions'
+            : 'Network forming';
+          status.textContent = body.clusters.length
+            ? `Regions are grouped; each shown cluster has at least ${body.minimumClusterSize} active host tokens. Counts are shown in ranges.`
+            : `No region has ${body.minimumClusterSize} active hosts yet. Contributors can opt in with a broad region; smaller groups stay hidden.`;
+        } catch (error) {
+          document.querySelector('#map-count').textContent = 'Map unavailable';
+          status.textContent = error.message;
+        }
+      }
+
+      async function loadCommunityStatus() {
+        const copy = document.querySelector('#community-status-copy');
+        try {
+          const response = await fetch('/api/community/status', { cache: 'no-store' });
+          const status = await response.json();
+          if (!response.ok) throw new Error(status?.error?.message || 'Community status is unavailable.');
+          copy.textContent = status.available
+            ? 'Community API is ready. Join the beta, create a Shared community API key, then connect Hermes or another OpenAI-compatible app using the community URL and a model from /v1/models.'
+            : `${status.message} You can create a community API key and prepare Hermes now; requests fail closed until a model is ready. The private test API is separate.`;
+          if (dashboardData) {
+            const wasEnabled = dashboardData.pools.communityEnabled;
+            dashboardData.pools.communityEnabled = status.available;
+            dashboardData.pools.communityConnected = status.connected;
+            dashboardData.pools.communityAvailabilityReason = status.reason;
+            dashboardData.pools.communityStatusMessage = status.message;
+            document.querySelector('#pool-status').textContent = status.available
+              ? 'Community API ready. Create a Shared community key and use its URL in Hermes or another OpenAI-compatible app. Community computers process those prompts.'
+              : `${status.message} You can create a community key now; requests fail closed until a complete model is serving. The private test API is separate and never receives community requests.`;
+            if (wasEnabled !== status.available) {
+              await loadModels();
+              renderHermesSetup();
+            }
+          }
+        } catch {
+          copy.textContent = 'Could not check whether the community API is ready. Check again before creating a key or sending prompts.';
+        }
+      }
+
+      function renderHermesSetup() {
+        if (!dashboardData) return;
+        const mode = document.querySelector('#model-mode').value;
+        const apiKey = dashboardData.apiKeys.find(key => key.mode === mode);
+        const baseUrl = mode === 'private' ? dashboardData.api.privateBaseUrl : dashboardData.api.communityBaseUrl;
+        document.querySelector('#hermes-config').textContent = apiKey
+          ? 'model:\n  provider: custom\n  base_url: ' + baseUrl + '\n  api_key: ' + apiKey.prefix + '…  # paste the full key shown at creation\n  default: <model-from-/v1/models>'
+          : 'Create a ' + mode + ' API key to see the matching endpoint setup.';
+      }
+
+      document.querySelector('#model-mode').addEventListener('change', renderHermesSetup);
+      loadNetworkMap();
+      setInterval(loadNetworkMap, 45_000);
+      loadCommunityStatus();
+      setInterval(loadCommunityStatus, 30_000);
+      if (localStorage.getItem(storageKey)) loadDashboard();
+    </script>
+  </body>
+</html>

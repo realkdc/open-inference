@@ -1,0 +1,28 @@
+{
+  "name": "open-inference",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "workspaces": [
+    "apps/gateway",
+    "apps/contributor"
+  ],
+  "scripts": {
+    "dev:gateway": "tsx watch apps/gateway/src/index.ts",
+    "dev:contributor": "npm run build:contributor && electron apps/contributor/dist/main.js",
+    "build": "npm run build:gateway && npm run build:contributor",
+    "build:gateway": "tsc -p apps/gateway/tsconfig.json",
+    "build:contributor": "tsc -p apps/contributor/tsconfig.json",
+    "test": "npm run build && node --test apps/gateway/test/*.test.mjs apps/contributor/test/*.test.mjs",
+    "start": "node apps/gateway/dist/index.js",
+    "prepare:mesh-bundle": "node scripts/prepare-mesh-bundle.mjs",
+    "package:electron-builder": "electron-builder",
+    "package:contributor": "node scripts/package-contributor.mjs mac",
+    "package:contributor:mac": "node scripts/package-contributor.mjs mac",
+    "package:contributor:windows": "node scripts/package-contributor.mjs windows",
+    "package:contributor:linux": "node scripts/package-contributor.mjs linux"
+  }
+}

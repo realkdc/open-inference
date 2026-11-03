@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#080b13" />
+    <title>Open Inference · Operator</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #080b13; color: #eff3ff; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; background: radial-gradient(ellipse at 8% 0%, #14213d 0%, #080b13 43%), #080b13; }
+      main { width: min(1050px, calc(100% - 32px)); margin: 0 auto; padding: 38px 0 72px; }
+      header, .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+      header { margin-bottom: 36px; }
+      .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+      .mark { width: 30px; height: 30px; border-radius: 10px; background: linear-gradient(145deg, #9cf4d2, #68a8ff); }
+      a { color: #92f0cf; text-decoration: none; }
+      h1 { font-size: clamp(34px, 6vw, 54px); margin: 0 0 10px; letter-spacing: -.05em; }
+      h2 { font-size: 17px; margin: 0 0 9px; }
+      p { color: #aeb9cd; line-height: 1.55; }
+      .muted, .small { color: #8b97ad; font-size: 13px; }
+      .card { background: #111725ee; border: 1px solid #263047; border-radius: 15px; padding: 20px; margin: 16px 0; }
+      .auth { max-width: 560px; }
+      .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 17px 0; }
+      .stat { background: #0a101a; border: 1px solid #263047; border-radius: 12px; padding: 16px; min-height: 92px; }
+      .stat span { display: block; color: #93a0b8; font-size: 12px; }
+      .stat strong { display: block; font-size: 25px; margin-top: 8px; }
+      label { display: block; color: #d9e2f3; font-size: 13px; margin: 12px 0 6px; }
+      input, select { width: 100%; color: #eff3ff; background: #090e18; border: 1px solid #303b53; border-radius: 9px; padding: 11px 12px; font: inherit; }
+      button { cursor: pointer; border: 0; border-radius: 9px; padding: 10px 13px; color: #08110f; background: #92f0cf; font: inherit; font-size: 13px; font-weight: 700; }
+      button.secondary { background: #1b2638; color: #dce7fa; border: 1px solid #35435c; }
+      button:disabled { opacity: .5; cursor: not-allowed; }
+      .status { min-height: 18px; margin-top: 10px; color: #9bf0d0; font-size: 13px; }
+      .warn { border: 1px solid #5a4930; background: #211b12; color: #e8d1a7; border-radius: 10px; padding: 12px; font-size: 13px; line-height: 1.55; }
+      .notice { border: 1px solid #274a4b; background: #0d2222; color: #b4dcd5; border-radius: 10px; padding: 12px; font-size: 13px; line-height: 1.55; }
+      .hidden { display: none !important; }
+      .secret { overflow-wrap: anywhere; background: #070b12; border: 1px solid #31405b; border-radius: 9px; padding: 12px; color: #bcf2de; font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { text-align: left; padding: 10px 6px; border-bottom: 1px solid #202b3f; color: #bac5d9; }
+      th { color: #8794ac; font-weight: 600; }
+      .grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; align-items: start; }
+      .split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+      @media (max-width: 760px) { .stats { grid-template-columns: repeat(2, 1fr); } .grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header><div class="brand"><div class="mark"></div><span>Open Inference · Operator</span></div><a href="/">Public beta page</a></header>
+      <section class="auth card">
+        <h1>Operator dashboard</h1>
+        <p class="muted">Pool status, model availability, beta invites, and workspaces.</p>
+        <form id="login-form">
+          <label for="admin-token">Admin token</label>
+          <div class="row"><input id="admin-token" type="password" autocomplete="off" required placeholder="Paste the private admin token" /><button type="submit">Sign in</button></div>
+          <div id="login-status" class="status" role="status"></div>
+        </form>
+      </section>
+      <section id="operator-content" class="hidden">
+        <div class="row"><p id="refresh-state" class="muted">Status not loaded yet.</p><div class="actions"><button id="refresh" class="secondary" type="button">Refresh status</button><button id="sign-out" class="secondary" type="button">Sign out</button></div></div>
+        <div id="pool-warning" class="warn"></div>
+        <section class="card">
+          <h2>Approve computers for the mesh</h2>
+          <p class="small">A host sends you its public Owner ID. Add it here to approve that computer. Every change pauses community requests until all mesh computers restart with the updated list and you confirm it below.</p>
+          <form id="owner-form" class="split">
+            <div><label for="owner-id">Host Owner ID</label><input id="owner-id" required maxlength="64" pattern="[A-Fa-f0-9]{64}" placeholder="64-character public ID" /></div>
+            <div><label for="owner-label">Label</label><input id="owner-label" required maxlength="48" placeholder="e.g. Alex’s Mac" /></div>
+            <div><button type="submit">Approve host</button></div>
+          </form>
+          <div id="owner-status" class="status" role="status"></div>
+          <h3 class="small">Current mesh owner allowlist</h3>
+          <div id="mesh-owner-ids" class="secret">Loading approved owner IDs…</div>
+          <button id="copy-owner-ids" class="secondary" type="button" style="margin-top:8px">Copy IDs</button>
+          <div id="mesh-owner-list" class="small" style="margin-top:12px">Loading approved hosts…</div>
+          <p id="admission-verification" class="warn small">Community requests stay paused until every mesh computer enforces this list.</p>
+          <button id="verify-admission" type="button" style="margin-top:8px">Confirm all computers use this list</button>
+          <p class="small">The bootstrap and gateway IDs are service setup entries. Host IDs approved here are added automatically for new contributor apps.</p>
+        </section>
+        <div class="stats">
+          <div class="stat"><span>Remote contributor computers</span><strong id="computer-count">—</strong></div>
+          <div class="stat"><span>Computers serving a model</span><strong id="serving-count">—</strong></div>
+          <div class="stat"><span>Reported usable model memory</span><strong id="memory-total">—</strong></div>
+          <div class="stat"><span>Models available through the API</span><strong id="api-model-count">—</strong></div>
+        </div>
+        <div class="grid">
+          <div>
+            <section class="card">
+              <h2>What is actually online</h2>
+              <p id="mesh-summary" class="muted">Loading MeshLLM status…</p>
+              <table><thead><tr><th>Model</th><th>Computers assigned</th><th>Serving now</th></tr></thead><tbody id="model-rows"></tbody></table>
+              <p class="small">These are reported MeshLLM status totals. Model memory is the capacity hosts advertise for inference, not RAM combined into one physical computer.</p>
+            </section>
+            <section class="card">
+              <h2>How to bring a computer online</h2>
+              <ol class="small">
+                <li>Send a trusted host the app for <a href="/download/contributor/macos-arm64">Apple Silicon Mac</a>, <a href="/download/contributor/windows-x64">Windows x64</a>, or <a href="/download/contributor/linux-x64">Linux x64</a>. MeshLLM is included. A website/API invite is not needed to donate compute.</li>
+                <li>They open it and send you their public Owner ID. Approve it above, then privately give them the beta server address and contributor join code.</li>
+                <li>They choose a model pool and click <strong>Start sharing</strong>. The app checks memory and downloads model pieces. One computer is the coordinator for each model; helpers choose worker.</li>
+                <li>MeshLLM connects the computers and assigns model layers. A connected computer is not automatically a serving model; wait until the model shows ready here.</li>
+                <li>API users can create a community key before then. Requests return unavailable until a complete model is ready; they never switch to the private pool.</li>
+              </ol>
+              <p class="warn">A join code is not an approval check. Do not share it broadly. Hosts that run model stages can inspect the prompts or intermediate data they process.</p>
+            </section>
+          </div>
+          <div>
+            <section class="card">
+              <h2>Contributor join code</h2>
+              <p class="muted">Use this to onboard a trusted computer. It does not let that person use the API.</p>
+              <button id="show-join" type="button">Reveal contributor join code</button>
+              <div id="join-result" class="hidden">
+                <div id="join-secret" class="secret" style="margin-top:12px"></div>
+                <button id="copy-join" class="secondary" type="button" style="margin-top:8px">Copy join code</button>
+                <p class="small">This code helps computers find the mesh. MeshLLM's owner allowlist is the actual admission control.</p>
+              </div>
+              <div id="join-status" class="status" role="status"></div>
+            </section>
+            <section class="card">
+              <h2>Create a beta invite</h2>
+              <form id="invite-form">
+                <label for="invite-expiry">Invite expires in</label>
+                <select id="invite-expiry"><option value="24">24 hours</option><option value="72" selected>3 days</option><option value="168">7 days</option><option value="720">30 days</option></select>
+                <div style="margin-top:12px"><button type="submit">Create invite</button></div>
+              </form>
+              <div id="invite-result" class="hidden"><p class="warn">This invite is shown once.</p><div id="invite-secret" class="secret"></div><button id="copy-invite" class="secondary" type="button" style="margin-top:8px">Copy invite</button></div>
+              <div id="invite-status" class="status" role="status"></div>
+            </section>
+            <section class="card">
+              <h2>Workspaces</h2>
+              <p class="muted">Manage beta members and usage plans.</p>
+              <div id="workspace-list" class="small">Sign in to load workspaces.</div>
+              <div id="workspace-status" class="status" role="status"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script>
+      let adminToken = '';
+      let inviteValue = '';
+      let statusTimer;
+      const $ = selector => document.querySelector(selector);
+      const message = (selector, value) => { $(selector).textContent = value; };
+      async function api(path, options = {}) {
+        const response = await fetch(path, { ...options, headers: { authorization: `Bearer ${adminToken}`, ...(options.body ? { 'content-type': 'application/json' } : {}), ...options.headers } });
+        const body = response.status === 204 ? null : await response.json().catch(() => null);
+        if (!response.ok) throw new Error(body?.error?.message ?? 'The request failed.');
+        return body;
+      }
+      async function refreshStatus() {
+        const state = await api('/admin/mesh/status');
+        const mesh = state.management;
+        const allOwnerIds = [...new Set([...(state.trustedOwnerIds ?? []), mesh.gateway.gatewayOwnerId].filter(value => typeof value === 'string'))].sort();
+        $('#mesh-owner-ids').textContent = allOwnerIds.length ? allOwnerIds.join(',') : 'No owner IDs are configured yet.';
+        $('#copy-owner-ids').disabled = allOwnerIds.length === 0;
+        const ownerList = $('#mesh-owner-list');
+        ownerList.replaceChildren();
+        const owners = state.meshOwners ?? [];
+        if (!owners.length) ownerList.textContent = 'No contributor hosts have been approved yet.';
+        else {
+          const table = document.createElement('table');
+          const head = document.createElement('tr');
+          for (const text of ['Host', 'Owner ID', 'Action']) { const cell = document.createElement('th'); cell.textContent = text; head.append(cell); }
+          table.append(head);
+          for (const owner of owners) {
+            const row = document.createElement('tr');
+            const label = document.createElement('td'); label.textContent = owner.label;
+            const id = document.createElement('td'); id.textContent = owner.ownerId;
+            const action = document.createElement('td');
+            const button = document.createElement('button'); button.className = 'secondary'; button.textContent = 'Revoke';
+            button.addEventListener('click', async () => {
+              button.disabled = true;
+              try { await api(`/admin/mesh/owners/${encodeURIComponent(owner.ownerId)}`, { method: 'DELETE' }); message('#owner-status', 'Host revoked. Community requests are paused until the mesh list is updated and confirmed.'); await refreshStatus(); }
+              catch (error) { message('#owner-status', error.message); button.disabled = false; }
+            });
+            action.append(button); row.append(label, id, action); table.append(row);
+          }
+          ownerList.append(table);
+        }
+        $('#verify-admission').disabled = !state.admissionPolicyEnabled || state.admissionVerified || !mesh.gateway.gatewayOwnerId || !allOwnerIds.some(value => value !== mesh.gateway.gatewayOwnerId);
+        $('#admission-verification').textContent = state.admissionVerified
+          ? 'The current owner list has been confirmed. Community requests can run when a model is serving.'
+          : state.admissionPolicyEnabled
+            ? 'After every mesh computer has restarted with the current list above, click Confirm. Community requests stay paused until then.'
+            : 'First enable the MeshLLM allowlist policy in the server configuration. Then restart all mesh computers and confirm here.';
+        const computerCount = mesh.remoteComputers ?? 0;
+        $('#computer-count').textContent = String(computerCount);
+        $('#serving-count').textContent = String(mesh.servingComputers ?? 0);
+        $('#memory-total').textContent = `${Number(mesh.reportedUsableMemoryGb ?? 0).toFixed(2)} GB`;
+        $('#api-model-count').textContent = String(mesh.gateway.models.length);
+        const route = state.communityRoutingEnabled ? 'enabled' : 'disabled';
+        const manager = mesh.managementReachable ? 'reachable' : mesh.managementConfigured ? 'not reachable' : 'not configured';
+        const client = mesh.gateway.connected ? 'connected to MeshLLM' : mesh.gateway.connecting ? 'connecting to MeshLLM' : mesh.gateway.clientStarted ? 'trying to reconnect' : 'not connected';
+        const localState = mesh.localNodeState ? ` The local mesh node is ${mesh.localNodeState}.` : '';
+        message('#mesh-summary', `Mesh management is ${manager}; API gateway is ${client}. Community API routing is ${route}.${localState}`);
+        const warning = state.communityRoutingEnabled
+          ? 'The community API is ready. Workspace owners can create a community key and connect an OpenAI-compatible app. Prompts are processed by contributing computers.'
+          : `${state.availabilityMessage || 'The community API is currently unavailable.'} The website does not connect visitors’ computers; hosts must install the app and explicitly start sharing.`;
+        message('#pool-warning', warning);
+        const rows = $('#model-rows');
+        rows.replaceChildren();
+        for (const model of mesh.models ?? []) {
+          const row = document.createElement('tr');
+          for (const value of [model.id, String(model.assignedComputers), String(model.servingComputers)]) {
+            const cell = document.createElement('td');
+            cell.textContent = value;
+            row.append(cell);
+          }
+          rows.append(row);
+        }
+        for (const model of mesh.gateway.models) {
+          const row = document.createElement('tr');
+          const label = document.createElement('td'); label.textContent = `${model} (API ready)`;
+          const assigned = document.createElement('td'); assigned.textContent = '—';
+          const serving = document.createElement('td'); serving.textContent = '—';
+          row.append(label, assigned, serving); rows.append(row);
+        }
+        if (!rows.children.length) {
+          const row = document.createElement('tr'); const cell = document.createElement('td');
+          cell.colSpan = 3; cell.textContent = 'No model stages are reported yet.'; row.append(cell); rows.append(row);
+        }
+        $('#show-join').disabled = !state.joinTokenConfigured;
+        message('#refresh-state', `Updated ${new Date().toLocaleTimeString()}.`);
+      }
+      async function loadWorkspaces() {
+        const result = await api('/admin/workspaces');
+        const list = $('#workspace-list');
+        list.replaceChildren();
+        if (!result.data.length) { list.textContent = 'No workspaces yet.'; return; }
+        const table = document.createElement('table');
+        const head = document.createElement('tr');
+        for (const text of ['Workspace', 'Plan', 'Change']) { const cell = document.createElement('th'); cell.textContent = text; head.append(cell); }
+        table.append(head);
+        for (const workspace of result.data) {
+          const row = document.createElement('tr');
+          const name = document.createElement('td'); name.textContent = workspace.name;
+          const plan = document.createElement('td'); plan.textContent = workspace.plan.name;
+          const action = document.createElement('td');
+          const select = document.createElement('select');
+          for (const option of [{ id: 'free', name: 'Free' }, { id: 'contributor', name: 'Contributor' }, { id: 'sustainer', name: 'Sustainer' }]) {
+            const item = document.createElement('option'); item.value = option.id; item.textContent = option.name; item.selected = option.id === workspace.planId; select.append(item);
+          }
+          const button = document.createElement('button'); button.className = 'secondary'; button.textContent = 'Save';
+          button.addEventListener('click', async () => {
+            button.disabled = true;
+            try { await api(`/admin/workspaces/${encodeURIComponent(workspace.id)}/plan`, { method: 'POST', body: JSON.stringify({ planId: select.value }) }); await loadWorkspaces(); message('#workspace-status', 'Plan saved.'); }
+            catch (error) { message('#workspace-status', error.message); button.disabled = false; }
+          });
+          action.append(select, button); row.append(name, plan, action); table.append(row);
+        }
+        list.append(table);
+      }
+      $('#login-form').addEventListener('submit', async event => {
+        event.preventDefault(); adminToken = $('#admin-token').value;
+        try {
+          await refreshStatus(); await loadWorkspaces(); $('#operator-content').classList.remove('hidden');
+          $('#admin-token').value = ''; message('#login-status', '');
+          clearInterval(statusTimer); statusTimer = setInterval(() => void refreshStatus().catch(error => message('#refresh-state', error.message)), 15000);
+        }
+        catch (error) { adminToken = ''; message('#login-status', error.message); }
+      });
+      $('#refresh').addEventListener('click', async () => {
+        try { await refreshStatus(); await loadWorkspaces(); }
+        catch (error) { message('#refresh-state', error.message); }
+      });
+      $('#sign-out').addEventListener('click', () => {
+        adminToken = ''; clearInterval(statusTimer); $('#admin-token').value = ''; $('#operator-content').classList.add('hidden');
+        $('#join-result').classList.add('hidden'); $('#invite-result').classList.add('hidden'); message('#login-status', 'Signed out.');
+      });
+      $('#show-join').addEventListener('click', async () => {
+        $('#show-join').disabled = true; message('#join-status', 'Checking admission setup…');
+        try {
+          const result = await api('/admin/mesh/join-info');
+          $('#join-secret').textContent = result.joinToken; $('#join-result').classList.remove('hidden'); message('#join-status', result.warning);
+        } catch (error) { message('#join-status', error.message); }
+        finally { $('#show-join').disabled = false; }
+      });
+      $('#copy-join').addEventListener('click', async () => { await navigator.clipboard.writeText($('#join-secret').textContent); message('#join-status', 'Join code copied.'); });
+      $('#copy-owner-ids').addEventListener('click', async () => { await navigator.clipboard.writeText($('#mesh-owner-ids').textContent); });
+      $('#owner-form').addEventListener('submit', async event => {
+        event.preventDefault();
+        const button = event.submitter;
+        button.disabled = true; message('#owner-status', 'Approving host…');
+        try {
+          await api('/admin/mesh/owners', { method: 'POST', body: JSON.stringify({ ownerId: $('#owner-id').value.trim(), label: $('#owner-label').value.trim() }) });
+          $('#owner-form').reset(); message('#owner-status', 'Host approved. The owner list changed; community requests are paused until the mesh is updated and confirmed.'); await refreshStatus();
+        } catch (error) { message('#owner-status', error.message); }
+        finally { button.disabled = false; }
+      });
+      $('#verify-admission').addEventListener('click', async () => {
+        const confirmed = window.confirm('Have you restarted every mesh computer with the exact owner list shown above?');
+        if (!confirmed) return;
+        $('#verify-admission').disabled = true; message('#owner-status', 'Saving confirmation…');
+        try { const result = await api('/admin/mesh/admission/verify', { method: 'POST', body: JSON.stringify({ confirmAllNodesUpdated: true }) }); message('#owner-status', result.message); await refreshStatus(); }
+        catch (error) { message('#owner-status', error.message); $('#verify-admission').disabled = false; }
+      });
+      $('#invite-form').addEventListener('submit', async event => {
+        event.preventDefault(); message('#invite-status', 'Creating invite…');
+        try {
+          const result = await api('/admin/invites', { method: 'POST', body: JSON.stringify({ expiresInHours: Number($('#invite-expiry').value) }) });
+          inviteValue = result.token; $('#invite-secret').textContent = `${result.token}\nExpires ${new Date(result.expiresAt).toLocaleString()}`; $('#invite-result').classList.remove('hidden'); message('#invite-status', '');
+        } catch (error) { message('#invite-status', error.message); }
+      });
+      $('#copy-invite').addEventListener('click', async () => { await navigator.clipboard.writeText(inviteValue); message('#invite-status', 'Invite copied.'); });
+    </script>
+  </body>
+</html>

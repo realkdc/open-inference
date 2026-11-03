@@ -1,0 +1,41 @@
+services:
+  gateway:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8787
+      DATABASE_PATH: /data/open-inference.sqlite
+      MESHLLM_OWNER_KEY_PATH: /data/community-mesh-owner-key
+      PUBLIC_BASE_URL: https://${DOMAIN}
+    volumes:
+      - open_inference_data:/data
+    expose:
+      - "8787"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in .env to a DNS name pointed at this server}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      gateway:
+        condition: service_healthy
+
+volumes:
+  open_inference_data:
+  caddy_data:
+  caddy_config:

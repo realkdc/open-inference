@@ -1,0 +1,15 @@
+{
+  "name": "@open-inference/contributor",
+  "version": "0.1.6",
+  "description": "Opt-in desktop app for sharing compute with the Open Inference beta",
+  "author": "Open Inference contributors",
+  "private": true,
+  "type": "module",
+  "main": "dist/main.js",
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "electron": "45.2.1",
+    "electron-builder": "^26.18.0",
+    "typescript": "^5.9.3"
+  }
+}

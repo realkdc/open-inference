@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" />
+    <title>Open Inference Contributor</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="brand"><div class="mark"></div><div><strong>Open Inference</strong><small>Shared compute contributor</small></div></div>
+        <div id="state-pill" class="pill">Not connected</div>
+      </header>
+
+      <section class="intro">
+        <div class="eyebrow">Share the work, share the access</div>
+        <h1>Contribute a piece of the model pool.</h1>
+        <p>Choose a model pool, then help run that model with other computers. MeshLLM splits supported models into stages and routes each API request to the matching pool.</p>
+      </section>
+
+      <section class="card">
+        <div class="card-heading"><div><h2>1. Choose which model to help run</h2><p>The app includes the MeshLLM runtime.</p></div><span class="step">01</span></div>
+        <label for="model-select">Model pool</label>
+        <select id="model-select">
+          <option value="qwen3-8b">Qwen3 8B · starter pool</option>
+          <option value="qwen3-30b-a3b-thinking-2507">Qwen3 30B-A3B Thinking · larger pool</option>
+        </select>
+        <p id="model-details" class="small">5.0 GB model · 36 layers. Best first pool for gathering enough computers to serve reliably.</p>
+        <p class="small">The bigger pool is about 17.7 GB across 48 layers. It needs a much larger group of computers and may be slower. The app checks your memory and applies the same conservative safety cap whichever pool you choose.</p>
+        <p class="small">Model pieces download automatically when you join. You do not need to install anything manually.</p>
+        <div id="memory-budget" class="status">Checking this computer’s memory…</div>
+      </section>
+
+      <section class="card">
+        <div class="card-heading"><div><h2>2. Join the shared pool</h2><p>The beta administrator gives you a mesh join token.</p></div><span class="step">02</span></div>
+        <label for="pool-role">Pool role</label>
+        <select id="pool-role">
+          <option value="" selected disabled>Choose this computer’s role</option>
+          <option value="coordinator">Start this model pool (first computer)</option>
+          <option value="worker">Join an existing model pool (additional computer)</option>
+        </select>
+        <p class="small">If no computer is running this model yet, choose <strong>Start this model pool</strong>. That computer is the coordinator. Every additional computer chooses <strong>Join an existing model pool</strong>. All computers helping with the same model must select the same model and join token.</p>
+        <p class="small">Starting a pool does not mean the model is ready yet. The coordinator and enough worker computers must connect and load their model stages before the API can answer requests.</p>
+        <label for="invite">Mesh join token</label>
+        <input id="invite" type="password" placeholder="Paste mesh join token" autocomplete="off" />
+        <label for="service-url">Open Inference beta server address</label>
+        <input id="service-url" type="url" placeholder="https://beta.example.org" autocomplete="url" />
+        <div class="owner-id-card">
+          <div><strong>This computer’s public Owner ID</strong><div id="owner-id" class="owner-id">Preparing secure identity…</div></div>
+          <button id="copy-owner-id" class="secondary" type="button" disabled>Copy ID</button>
+        </div>
+        <p class="small">Send this ID to the beta operator for approval. The app will only join after the server confirms this ID is on the approved list.</p>
+        <p class="small">The app starts with a 2,048-token context and automatically limits model memory. Only the computer chosen for this model should use coordinator mode.</p>
+        <div class="notice"><strong>What this does:</strong> MeshLLM connects computers and can split supported models into stages. Your computer may receive only some layers, but a working model package and compatible hardware are still needed. A weak or distant connection can make replies slow. The first trial works best with a few computers near one another.</div>
+        <div class="notice warn"><strong>Network reachability:</strong> peers need to reach this computer for split-stage traffic. On macOS, allow incoming connections for MeshLLM and turn off firewall stealth mode. A computer can look connected while its firewall still blocks its model stage.</div>
+        <div class="notice warn"><strong>Privacy:</strong> encrypted links protect data in transit. The first computer running the model receives the prompt. Other computers may receive intermediate model data. A worker owner could inspect what their computer is processing; this app cannot hide it from them. Mesh request logging is set to metadata only, but that does not prevent live inspection.</div>
+        <div class="notice warn"><strong>Network access:</strong> the app checks the beta server’s owner allowlist and starts MeshLLM in allowlist mode. The join token helps computers find the pool; it is not the approval check. Do not post it publicly.</div>
+        <label class="check"><input id="acknowledge" type="checkbox" /> I understand this computer may process other people's requests and may use my bandwidth.</label>
+        <label class="check"><input id="invite-acknowledge" type="checkbox" /> I understand the invite is shared with mesh members, and other members' computers may process my requests.</label>
+        <div class="row actions"><button id="start-sharing" disabled>Start contributing</button><button id="pause" class="secondary" disabled>Pause sharing</button><button id="disconnect" class="secondary" disabled>Disconnect</button></div>
+        <div id="connection-status" class="status"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-heading"><div><h2>3. Add an anonymous map dot (optional)</h2><p>No precise location is requested or collected.</p></div><span class="step">03</span></div>
+        <label class="check"><input id="map-opt-in" type="checkbox" /> I want my computer to count toward the public network map while it is contributing.</label>
+        <label for="host-token">Host token from your Open Inference dashboard</label>
+        <input id="host-token" type="password" placeholder="oi_host_…" autocomplete="off" />
+        <label for="region">Broad region</label>
+        <select id="region">
+          <option value="">Choose a broad region</option>
+          <option value="na-west">North America · West</option><option value="na-central">North America · Central</option><option value="na-east">North America · East</option>
+          <option value="south-america">South America</option><option value="europe-west">Europe · West</option><option value="europe-central">Europe · Central</option>
+          <option value="europe-east">Europe · East</option><option value="africa">Africa</option><option value="middle-east">Middle East</option>
+          <option value="south-asia">South Asia</option><option value="east-asia">East Asia</option><option value="southeast-asia">Southeast Asia</option><option value="oceania">Oceania</option>
+        </select>
+        <div class="notice">The map shows only a region bucket with 3 or more active host tokens, in a count range. Presence disappears within a few minutes after a computer goes offline. This token cannot run inference or view prompts.</div>
+      </section>
+
+      <section class="footnote">
+        <strong>Your computer stays yours.</strong> The worker uses your normal internet connection for mesh traffic. It does not create a whole-device VPN or make your internet connection faster. This build does not yet offer an exact bandwidth cap. Pause sharing to stop the worker; disconnect clears the join token from app memory.
+      </section>
+    </main>
+    <script src="./renderer.js" defer></script>
+  </body>
+</html>
